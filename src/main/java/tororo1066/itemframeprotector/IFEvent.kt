@@ -11,11 +11,13 @@ import org.bukkit.entity.Player
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
+import org.bukkit.event.block.BlockFadeEvent
 import org.bukkit.event.block.BlockPlaceEvent
 import org.bukkit.event.entity.EntityDamageByEntityEvent
 import org.bukkit.event.entity.EntityDamageEvent
 import org.bukkit.event.entity.EntityExplodeEvent
 import org.bukkit.event.hanging.HangingBreakByEntityEvent
+import org.bukkit.event.hanging.HangingBreakEvent
 import org.bukkit.event.hanging.HangingPlaceEvent
 import org.bukkit.event.player.PlayerBucketEmptyEvent
 import org.bukkit.event.player.PlayerInteractEntityEvent
@@ -72,7 +74,7 @@ class IFEvent {
                 }
             }
 
-            if (data.placePlayer != remover.uniqueId){
+            if (data.placePlayer != remover.uniqueId || e.cause == HangingBreakEvent.RemoveCause.EXPLOSION){
                 if (remover is Player){
                     remover.sendPrefixMsg("§4この額縁は保護されています")
                 }
@@ -216,6 +218,10 @@ class IFEvent {
                 e.isCancelled = true
                 return@register
             }
+        }
+
+        SEvent(ItemFrameProtector.plugin).register(BlockFadeEvent::class.java) { e ->
+            if (isProtectedBlock(e.block.location))e.isCancelled = true
         }
 
 

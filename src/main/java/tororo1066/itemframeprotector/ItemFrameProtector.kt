@@ -52,5 +52,6 @@ class ItemFrameProtector : JavaPlugin() {
             itemFrameData[data.uuid] = data
         }
 
+
     }
 }
