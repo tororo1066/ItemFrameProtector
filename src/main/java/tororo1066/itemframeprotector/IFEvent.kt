@@ -13,9 +13,7 @@ import org.bukkit.event.block.BlockBreakEvent
 import org.bukkit.event.block.BlockExplodeEvent
 import org.bukkit.event.block.BlockFadeEvent
 import org.bukkit.event.block.BlockPlaceEvent
-import org.bukkit.event.entity.EntityDamageByEntityEvent
-import org.bukkit.event.entity.EntityDamageEvent
-import org.bukkit.event.entity.EntityExplodeEvent
+import org.bukkit.event.entity.*
 import org.bukkit.event.hanging.HangingBreakByEntityEvent
 import org.bukkit.event.hanging.HangingBreakEvent
 import org.bukkit.event.hanging.HangingPlaceEvent
@@ -25,16 +23,21 @@ import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import tororo1066.itemframeprotector.ItemFrameProtector.Companion.sendPrefixMsg
 import tororo1066.tororopluginapi.sEvent.SEvent
+import tororo1066.tororopluginapi.utils.LocType
+import tororo1066.tororopluginapi.utils.toLocString
 import java.util.*
 
 class IFEvent {
     init {
         SEvent(ItemFrameProtector.plugin).register(HangingPlaceEvent::class.java,EventPriority.HIGHEST) { e ->
             if (e.isCancelled)return@register
-            if (e.player?.hasPermission("ifp.user") == false)return@register
+            if (!(e.player?:return@register).hasPermission("ifp.user"))return@register
             if (e.entity.type != EntityType.GLOW_ITEM_FRAME && e.entity.type != EntityType.ITEM_FRAME) return@register
+            val placePlayer = e.player!!
+            if (ItemFrameProtector.disableWorlds.contains(e.player!!.world.name)){
+                return@register
+            }
             val uuid = e.entity.uniqueId
-            val placePlayer = e.player?:return@register
             val loc = e.entity.location.toBlockLocation()
             loc.yaw = 0f
             loc.pitch = 0f
@@ -45,7 +48,7 @@ class IFEvent {
             data.loc = loc
 
             ItemFrameProtector.itemFrameData[uuid] = data
-            ItemFrameProtector.mysql.asyncExecute("insert into protect_id (placePlayer, placePlayerName, frameId, loc) values ('${placePlayer.uniqueId}', '${placePlayer.name}', '${uuid}', '${loc.world.name},${loc.blockX},${loc.blockY},${loc.blockZ}')")
+            ItemFrameProtector.ifSQLTable.insert(placePlayer.uniqueId,placePlayer.name,uuid,loc.toLocString(LocType.WORLD_BLOCK_COMMA))
 
 
 
@@ -140,7 +143,7 @@ class IFEvent {
 
         SEvent(ItemFrameProtector.plugin).register(BlockBreakEvent::class.java) { e ->
             if (e.isCancelled)return@register
-            val entities = e.block.location.subtract(-0.5,-0.5,-0.5).getNearbyEntitiesByType(ItemFrame::class.java,1.5,1.5,1.5)
+            val entities = e.block.location.subtract(-0.5,-0.5,-0.5).getNearbyEntities(1.5,1.5,1.5).filter { it.type == EntityType.ITEM_FRAME || it.type == EntityType.GLOW_ITEM_FRAME }
             if (entities.isEmpty())return@register
             for (entity in entities){
                 if (!ItemFrameProtector.itemFrameData.containsKey(entity.uniqueId))continue
@@ -224,12 +227,16 @@ class IFEvent {
             if (isProtectedBlock(e.block.location))e.isCancelled = true
         }
 
+        SEvent(ItemFrameProtector.plugin).register(EntityChangeBlockEvent::class.java) { e ->
+            if (isProtectedBlock(e.block.location))e.isCancelled = true
+        }
+
 
     }
 
     private fun delete(uuid: UUID){
         ItemFrameProtector.itemFrameData.remove(uuid)
-        ItemFrameProtector.mysql.asyncExecute("delete from protect_id where frameId = '${uuid}'")
+        ItemFrameProtector.ifSQLTable.delete(IFSQLTable.frameId.equal(uuid))
     }
 
     private fun isProtectedBlock(location: Location): Boolean {

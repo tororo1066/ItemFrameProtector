@@ -1,7 +1,9 @@
 name: ItemFrameProtector
-version: '${version}'
+version: 1.0
 main: tororo1066.itemframeprotector.ItemFrameProtector
 api-version: 1.17
+
+author: tororo_1066
 
 commands:
   ifp:

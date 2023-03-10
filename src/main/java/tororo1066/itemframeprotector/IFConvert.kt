@@ -46,7 +46,7 @@ object IFConvert {
                     data.loc = loc
                     data.placePlayer = playerId
                     data.placePlayerName = player.name!!
-                    ItemFrameProtector.mysql.execute("insert into protect_id (placePlayer, placePlayerName, frameId, loc) values ('${playerId}', '${player.name!!}', '${frameId}', '${loc.world.name},${loc.blockZ},${loc.blockY},${loc.blockZ}')")
+                    ItemFrameProtector.mysql.execute("insert into protect_id (placePlayer, placePlayerName, frameId, loc) values ('${playerId}', '${player.name!!}', '${frameId}', '${loc.world.name},${loc.blockX},${loc.blockY},${loc.blockZ}')")
                 }
                 Bukkit.broadcast(Component.text(ItemFrameProtector.prefix + "§aコンバートが完了しました"), Server.BROADCAST_CHANNEL_ADMINISTRATIVE)
 
