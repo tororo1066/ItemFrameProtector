@@ -5,23 +5,21 @@ import org.bukkit.Location
 import tororo1066.tororopluginapi.mysql.ultimate.USQLTable
 import tororo1066.tororopluginapi.mysql.ultimate.USQLVariable
 import java.util.*
-import kotlin.collections.ArrayList
-import kotlin.collections.LinkedHashMap
 
-class IFSQLTable: USQLTable(IFSQLTable::class.java,"protect_id",ItemFrameProtector.mysql){
+class IFSQLTable: USQLTable("protect_id",ItemFrameProtector.mysql){
 
     companion object{
-        val id = USQLVariable(USQLVariable.Type.INT,true)
-        val placePlayer = USQLVariable(USQLVariable.Type.VARCHAR,36)
-        val placePlayerName = USQLVariable(USQLVariable.Type.VARCHAR,16)
-        val frameId = USQLVariable(USQLVariable.Type.VARCHAR,36)
-        val loc = USQLVariable(USQLVariable.Type.VARCHAR,100)
+        val id = USQLVariable(USQLVariable.Int,true)
+        val placePlayer = USQLVariable(USQLVariable.VarChar,36)
+        val placePlayerName = USQLVariable(USQLVariable.VarChar,16)
+        val frameId = USQLVariable(USQLVariable.VarChar,36)
+        val loc = USQLVariable(USQLVariable.VarChar,100)
     }
 
     fun loadData(){
         val rs = select()
         rs.forEach { result ->
-            val data = IFData()
+            val data = IFDataImpl()
             data.placePlayer = UUID.fromString(result.getString("placePlayer"))
             data.placePlayerName = result.getString("placePlayerName")
             data.uuid = UUID.fromString(result.getString("frameId"))

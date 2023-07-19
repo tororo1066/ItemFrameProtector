@@ -6,7 +6,6 @@ import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.block.BlockFace
 import org.bukkit.entity.EntityType
-import org.bukkit.entity.ItemFrame
 import org.bukkit.entity.Player
 import org.bukkit.event.EventPriority
 import org.bukkit.event.block.BlockBreakEvent
@@ -22,6 +21,9 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import tororo1066.itemframeprotector.ItemFrameProtector.Companion.sendPrefixMsg
+import tororo1066.itemframeprotector.api.event.IFPRemoveEvent
+import tororo1066.itemframeprotector.api.event.IFPCause
+import tororo1066.itemframeprotector.api.event.IFPInteractEvent
 import tororo1066.tororopluginapi.sEvent.SEvent
 import tororo1066.tororopluginapi.utils.LocType
 import tororo1066.tororopluginapi.utils.toLocString
@@ -41,7 +43,7 @@ class IFEvent {
             val loc = e.entity.location.toBlockLocation()
             loc.yaw = 0f
             loc.pitch = 0f
-            val data = IFData()
+            val data = IFDataImpl()
             data.uuid = uuid
             data.placePlayer = placePlayer.uniqueId
             data.placePlayerName = placePlayer.name
@@ -60,17 +62,26 @@ class IFEvent {
 
             val remover = e.remover
 
+            val data = ItemFrameProtector.itemFrameData[e.entity.uniqueId]!!
+
             if (remover == null){
-                e.isCancelled = true
+                val event = IFPRemoveEvent(data, null, IFPCause.UNKNOWN, true)
+                Bukkit.getPluginManager().callEvent(event)
+                if (event.isCancelled){
+                    e.isCancelled = true
+                }
                 return@register
             }
-
-
-            val data = ItemFrameProtector.itemFrameData[e.entity.uniqueId]!!
 
             if (remover is Player){
                 val hand = remover.inventory.itemInMainHand
                 if (isStaff(hand)){
+                    val event = IFPRemoveEvent(data, remover, IFPCause.OP_STAFF)
+                    Bukkit.getPluginManager().callEvent(event)
+                    if (event.isCancelled){
+                        e.isCancelled = true
+                        return@register
+                    }
                     remover.sendPrefixMsg("§b保護を強制的に破壊しました")
                     delete(e.entity.uniqueId)
                     return@register
@@ -78,6 +89,11 @@ class IFEvent {
             }
 
             if (data.placePlayer != remover.uniqueId || e.cause == HangingBreakEvent.RemoveCause.EXPLOSION){
+                val event = IFPRemoveEvent(data, remover, IFPCause.ENTITY, true)
+                Bukkit.getPluginManager().callEvent(event)
+                if (!event.isCancelled){
+                    return@register
+                }
                 if (remover is Player){
                     remover.sendPrefixMsg("§4この額縁は保護されています")
                 }
@@ -97,22 +113,37 @@ class IFEvent {
 
             val hand = e.player.inventory.itemInMainHand
             if (isStaff(hand)){
+                val event = IFPInteractEvent(data, e.player, IFPCause.OP_STAFF)
+                Bukkit.getPluginManager().callEvent(event)
+                if (event.isCancelled){
+                    e.isCancelled = true
+                    return@register
+                }
                 e.player.sendPrefixMsg("§b保護を無視しました")
                 return@register
             }
 
             if (data.placePlayer != e.player.uniqueId){
+                val event = IFPInteractEvent(data, e.player, IFPCause.ENTITY, true)
+                Bukkit.getPluginManager().callEvent(event)
+                if (!event.isCancelled){
+                    return@register
+                }
                 e.isCancelled = true
                 e.player.sendPrefixMsg("§4この額縁は保護されています")
-
                 return@register
             }
 
         }
 
         SEvent(ItemFrameProtector.plugin).register(EntityDamageEvent::class.java,EventPriority.HIGHEST){ e ->
-            if (e.isCancelled)return@register
-            if (!ItemFrameProtector.itemFrameData.containsKey(e.entity.uniqueId))return@register
+            if (e.isCancelled || e is EntityDamageByEntityEvent)return@register
+            val data = ItemFrameProtector.itemFrameData[e.entity.uniqueId]?:return@register
+            val event = IFPInteractEvent(data, null, IFPCause.UNKNOWN, true)
+            Bukkit.getPluginManager().callEvent(event)
+            if (!event.isCancelled){
+                return@register
+            }
             e.isCancelled = true
         }
 
@@ -126,16 +157,27 @@ class IFEvent {
             if (remover is Player){
                 val hand = remover.inventory.itemInMainHand
                 if (isStaff(hand)){
+                    val event = IFPInteractEvent(data, remover, IFPCause.OP_STAFF)
+                    Bukkit.getPluginManager().callEvent(event)
+                    if (event.isCancelled){
+                        e.isCancelled = true
+                        return@register
+                    }
                     remover.sendPrefixMsg("§b保護を無視しました")
                     return@register
                 }
             }
 
             if (data.placePlayer != remover.uniqueId){
+                val event = IFPInteractEvent(data, remover, IFPCause.ENTITY, true)
+                Bukkit.getPluginManager().callEvent(event)
+                if (!event.isCancelled){
+                    return@register
+                }
+
                 if (remover is Player){
                     remover.sendPrefixMsg("§4この額縁は保護されています")
                 }
-
                 e.isCancelled = true
                 return@register
             }
@@ -146,8 +188,7 @@ class IFEvent {
             val entities = e.block.location.subtract(-0.5,-0.5,-0.5).getNearbyEntities(1.5,1.5,1.5).filter { it.type == EntityType.ITEM_FRAME || it.type == EntityType.GLOW_ITEM_FRAME }
             if (entities.isEmpty())return@register
             for (entity in entities){
-                if (!ItemFrameProtector.itemFrameData.containsKey(entity.uniqueId))continue
-                val data = ItemFrameProtector.itemFrameData[entity.uniqueId]!!
+                val data = ItemFrameProtector.itemFrameData[entity.uniqueId]?:continue
 
                 val loc = data.loc.clone()
 
@@ -176,6 +217,11 @@ class IFEvent {
                 val breakLoc = e.block.location.toBlockLocation()
 
                 if (breakLoc == loc){
+                    val event = IFPRemoveEvent(data, e.player, IFPCause.BLOCK, true)
+                    Bukkit.getPluginManager().callEvent(event)
+                    if (!event.isCancelled){
+                        return@register
+                    }
                     e.isCancelled = true
                     e.player.sendPrefixMsg("§4この額縁は保護されています")
                     return@register
@@ -227,9 +273,9 @@ class IFEvent {
             if (isProtectedBlock(e.block.location))e.isCancelled = true
         }
 
-        SEvent(ItemFrameProtector.plugin).register(EntityChangeBlockEvent::class.java) { e ->
-            if (isProtectedBlock(e.block.location))e.isCancelled = true
-        }
+//        SEvent(ItemFrameProtector.plugin).register(EntityChangeBlockEvent::class.java) { e ->
+//            if (isProtectedBlock(e.block.location))e.isCancelled = true
+//        }
 
 
     }

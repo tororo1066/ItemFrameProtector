@@ -5,7 +5,6 @@ import org.bukkit.Bukkit
 import org.bukkit.Server
 import java.sql.DriverManager
 import java.util.UUID
-import java.util.concurrent.Executors
 
 object IFConvert {
 
@@ -41,7 +40,7 @@ object IFConvert {
                     val loc = frameEntity.location.toBlockLocation()
                     loc.yaw = 0f
                     loc.pitch = 0f
-                    val data = IFData()
+                    val data = IFDataImpl()
                     data.uuid = frameId
                     data.loc = loc
                     data.placePlayer = playerId
