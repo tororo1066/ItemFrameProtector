@@ -28,6 +28,7 @@ dependencies {
     api project(":API")
 }
 
+
 import org.apache.tools.ant.filters.ReplaceTokens
 
 processResources {
