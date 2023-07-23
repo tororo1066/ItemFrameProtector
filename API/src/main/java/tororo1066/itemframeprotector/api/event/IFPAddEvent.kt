@@ -6,10 +6,15 @@ import org.bukkit.event.HandlerList
 
 class IFPAddEvent(private var isCancelled: Boolean = false): Event(), Cancellable {
 
-    private val handlers = HandlerList()
+    companion object {
+        private val handlers = HandlerList()
+        fun getHandlerList(): HandlerList {
+            return handlers
+        }
+    }
 
     override fun getHandlers(): HandlerList {
-        return handlers
+        return getHandlerList()
     }
 
     override fun isCancelled(): Boolean {
