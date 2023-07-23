@@ -21,7 +21,7 @@ class IFPRemoveEvent(
     }
 
     override fun getHandlers(): HandlerList {
-        return handlers
+        return getHandlerList()
     }
 
     override fun isCancelled(): Boolean {
