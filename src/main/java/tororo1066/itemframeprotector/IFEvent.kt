@@ -21,6 +21,7 @@ import org.bukkit.event.player.PlayerInteractEntityEvent
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import tororo1066.itemframeprotector.ItemFrameProtector.Companion.sendPrefixMsg
+import tororo1066.itemframeprotector.api.event.IFPAddEvent
 import tororo1066.itemframeprotector.api.event.IFPRemoveEvent
 import tororo1066.itemframeprotector.api.event.IFPCause
 import tororo1066.itemframeprotector.api.event.IFPInteractEvent
@@ -49,11 +50,14 @@ class IFEvent {
             data.placePlayerName = placePlayer.name
             data.loc = loc
 
+            val event = IFPAddEvent(data)
+            Bukkit.getPluginManager().callEvent(event)
+            if (event.isCancelled){
+                return@register
+            }
+
             ItemFrameProtector.itemFrameData[uuid] = data
             ItemFrameProtector.ifSQLTable.insert(placePlayer.uniqueId,placePlayer.name,uuid,loc.toLocString(LocType.WORLD_BLOCK_COMMA))
-
-
-
         }
 
         SEvent(ItemFrameProtector.plugin).register(HangingBreakByEntityEvent::class.java,EventPriority.HIGHEST) { e ->

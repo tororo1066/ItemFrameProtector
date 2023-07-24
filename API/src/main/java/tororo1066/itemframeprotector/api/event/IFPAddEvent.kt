@@ -3,11 +3,16 @@ package tororo1066.itemframeprotector.api.event
 import org.bukkit.event.Cancellable
 import org.bukkit.event.Event
 import org.bukkit.event.HandlerList
+import tororo1066.itemframeprotector.api.IFData
 
-class IFPAddEvent(private var isCancelled: Boolean = false): Event(), Cancellable {
+class IFPAddEvent(
+    val data: IFData,
+    private var isCancelled: Boolean = false
+): Event(), Cancellable {
 
     companion object {
         private val handlers = HandlerList()
+        @JvmStatic
         fun getHandlerList(): HandlerList {
             return handlers
         }

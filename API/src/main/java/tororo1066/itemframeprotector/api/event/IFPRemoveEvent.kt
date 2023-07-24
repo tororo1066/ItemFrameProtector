@@ -15,6 +15,7 @@ class IFPRemoveEvent(
 
     companion object {
         private val handlers = HandlerList()
+        @JvmStatic
         fun getHandlerList(): HandlerList {
             return handlers
         }
