@@ -72,7 +72,10 @@ class IFCommand : SCommand(
                             if (ItemFrameProtector.itemFrameData.containsKey(entity.uniqueId)) return@forEach
                             val data = IFDataImpl()
                             data.uuid = entity.uniqueId
-                            data.loc = entity.location.toBlockLocation()
+                            data.loc = entity.location.toBlockLocation().apply {
+                                yaw = 0f
+                                pitch = 0f
+                            }
                             data.placePlayer = it.sender.uniqueId
                             data.placePlayerName = it.sender.name
                             ItemFrameProtector.itemFrameData[data.uuid] = data
@@ -84,6 +87,7 @@ class IFCommand : SCommand(
                             )
                         }
                     }
+                    it.sender.sendMessage(ItemFrameProtector.PREFIX + "§a保存しました")
                 }
         )
 
