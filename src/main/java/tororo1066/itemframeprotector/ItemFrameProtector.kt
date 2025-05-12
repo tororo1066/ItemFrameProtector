@@ -1,7 +1,6 @@
 package tororo1066.itemframeprotector
 
 import org.bukkit.entity.Player
-import org.bukkit.plugin.java.JavaPlugin
 import tororo1066.tororopluginapi.SJavaPlugin
 import tororo1066.tororopluginapi.mysql.SMySQL
 import java.util.UUID
@@ -13,11 +12,11 @@ class ItemFrameProtector : SJavaPlugin() {
         lateinit var mysql: SMySQL
         lateinit var ifSQLTable: IFSQLTable
         val itemFrameData = HashMap<UUID,IFDataImpl>()
-        const val prefix = "§6[§d§lItem§b§lFrame§c§lProtect§6]§r"
+        const val PREFIX = "§6[§d§lItem§b§lFrame§c§lProtect§6]§r"
         val disableWorlds = ArrayList<String>()
 
         fun Player.sendPrefixMsg(s : String){
-            this.sendMessage(prefix + s)
+            this.sendMessage(PREFIX + s)
         }
     }
 
@@ -25,10 +24,15 @@ class ItemFrameProtector : SJavaPlugin() {
         saveDefaultConfig()
         plugin = this
         mysql = SMySQL(this)
-        ifSQLTable = IFSQLTable()
+        disableWorlds.addAll(config.getStringList("disableWorlds"))
+        val tableName = config.getString("mysql.tableName", "protect_id")!!
+        ifSQLTable = IFSQLTable(tableName)
         ifSQLTable.loadData()
         IFEvent()
         IFCommand()
-        disableWorlds.addAll(config.getStringList("disableWorlds"))
+    }
+
+    override fun onEnd() {
+
     }
 }

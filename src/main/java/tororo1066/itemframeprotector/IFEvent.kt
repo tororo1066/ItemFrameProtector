@@ -57,7 +57,7 @@ class IFEvent {
             }
 
             ItemFrameProtector.itemFrameData[uuid] = data
-            ItemFrameProtector.ifSQLTable.insert(placePlayer.uniqueId,placePlayer.name,uuid,loc.toLocString(LocType.WORLD_BLOCK_COMMA))
+            ItemFrameProtector.ifSQLTable.callBackInsert(placePlayer.uniqueId,placePlayer.name,uuid,loc.toLocString(LocType.WORLD_BLOCK_COMMA))
         }
 
         SEvent(ItemFrameProtector.plugin).register(HangingBreakByEntityEvent::class.java,EventPriority.HIGHEST) { e ->
@@ -244,7 +244,7 @@ class IFEvent {
             }
         }
 
-        SEvent(ItemFrameProtector.plugin).register(BlockExplodeEvent::class.java,EventPriority.HIGHEST){ e ->
+        SEvent(ItemFrameProtector.plugin).register(BlockExplodeEvent::class.java,EventPriority.LOWEST){ e ->
             if (e.isCancelled)return@register
             val list = e.blockList().filter { isProtectedBlock(it.location) }
             if (list.isEmpty())return@register
@@ -286,7 +286,7 @@ class IFEvent {
 
     private fun delete(uuid: UUID){
         ItemFrameProtector.itemFrameData.remove(uuid)
-        ItemFrameProtector.ifSQLTable.delete(IFSQLTable.frameId.equal(uuid))
+        ItemFrameProtector.ifSQLTable.callBackDelete(IFSQLTable.frameId.equal(uuid)) {}
     }
 
     private fun isProtectedBlock(location: Location): Boolean {

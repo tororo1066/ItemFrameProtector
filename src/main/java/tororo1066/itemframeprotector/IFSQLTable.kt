@@ -2,18 +2,19 @@ package tororo1066.itemframeprotector
 
 import org.bukkit.Bukkit
 import org.bukkit.Location
+import tororo1066.tororopluginapi.database.SDBVariable
 import tororo1066.tororopluginapi.mysql.ultimate.USQLTable
-import tororo1066.tororopluginapi.mysql.ultimate.USQLVariable
 import java.util.*
 
-class IFSQLTable: USQLTable("protect_id",ItemFrameProtector.mysql){
+class IFSQLTable(table: String): USQLTable(table,ItemFrameProtector.mysql){
 
+    @Suppress("unused")
     companion object{
-        val id = USQLVariable(USQLVariable.Int,true)
-        val placePlayer = USQLVariable(USQLVariable.VarChar,36)
-        val placePlayerName = USQLVariable(USQLVariable.VarChar,16)
-        val frameId = USQLVariable(USQLVariable.VarChar,36)
-        val loc = USQLVariable(USQLVariable.VarChar,100)
+        val id = SDBVariable(SDBVariable.Int,true)
+        val placePlayer = SDBVariable(SDBVariable.VarChar,36)
+        val placePlayerName = SDBVariable(SDBVariable.VarChar,16)
+        val frameId = SDBVariable(SDBVariable.VarChar,36)
+        val loc = SDBVariable(SDBVariable.VarChar,100)
     }
 
     fun loadData(){

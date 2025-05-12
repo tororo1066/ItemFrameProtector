@@ -47,7 +47,7 @@ object IFConvert {
                     data.placePlayerName = player.name!!
                     ItemFrameProtector.mysql.execute("insert into protect_id (placePlayer, placePlayerName, frameId, loc) values ('${playerId}', '${player.name!!}', '${frameId}', '${loc.world.name},${loc.blockX},${loc.blockY},${loc.blockZ}')")
                 }
-                Bukkit.broadcast(Component.text(ItemFrameProtector.prefix + "§aコンバートが完了しました"), Server.BROADCAST_CHANNEL_ADMINISTRATIVE)
+                Bukkit.broadcast(Component.text(ItemFrameProtector.PREFIX + "§aコンバートが完了しました"), Server.BROADCAST_CHANNEL_ADMINISTRATIVE)
 
         }catch (e : Exception){
             Bukkit.getLogger().warning("IFP Error")

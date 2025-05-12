@@ -4,3 +4,4 @@ mysql:
   user: root
   pass: pass
   db: ifp
+  tableName: protect_id
