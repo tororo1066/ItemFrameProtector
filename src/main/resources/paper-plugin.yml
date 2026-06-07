@@ -3,3 +3,14 @@ version: "1.0"
 main: tororo1066.itemframeprotector.ItemFrameProtector
 api-version: "1.19"
 loader: tororo1066.itemframeprotector.DependencyLoader
+
+dependencies:
+  server:
+    MultiWorld:
+      load: BEFORE
+      required: false
+      join-classpath: false
+    Multiverse-Core:
+      load: BEFORE
+      required: false
+      join-classpath: false

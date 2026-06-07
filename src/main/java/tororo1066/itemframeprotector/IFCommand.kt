@@ -79,12 +79,7 @@ class IFCommand : SCommand(
                             data.placePlayer = it.sender.uniqueId
                             data.placePlayerName = it.sender.name
                             ItemFrameProtector.itemFrameData[data.uuid] = data
-                            ItemFrameProtector.ifSQLTable.callBackInsert(
-                                data.placePlayer,
-                                data.placePlayerName,
-                                data.uuid,
-                                data.loc.toLocString(LocType.WORLD_BLOCK_COMMA)
-                            )
+                            ItemFrameProtector.ifDatabase.insert(data)
                         }
                     }
                     it.sender.sendMessage(ItemFrameProtector.PREFIX + "§a保存しました")

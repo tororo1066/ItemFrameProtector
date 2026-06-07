@@ -57,7 +57,7 @@ class IFEvent {
             }
 
             ItemFrameProtector.itemFrameData[uuid] = data
-            ItemFrameProtector.ifSQLTable.callBackInsert(placePlayer.uniqueId,placePlayer.name,uuid,loc.toLocString(LocType.WORLD_BLOCK_COMMA))
+            ItemFrameProtector.ifDatabase.insert(data)
         }
 
         SEvent(ItemFrameProtector.plugin).register(HangingBreakByEntityEvent::class.java,EventPriority.HIGHEST) { e ->
@@ -68,7 +68,7 @@ class IFEvent {
 
             val data = ItemFrameProtector.itemFrameData[e.entity.uniqueId]!!
 
-            if (remover == null){
+            if (!remover.isValid) {
                 val event = IFPRemoveEvent(data, null, IFPCause.UNKNOWN, true)
                 Bukkit.getPluginManager().callEvent(event)
                 if (event.isCancelled){
@@ -286,7 +286,7 @@ class IFEvent {
 
     private fun delete(uuid: UUID){
         ItemFrameProtector.itemFrameData.remove(uuid)
-        ItemFrameProtector.ifSQLTable.callBackDelete(IFSQLTable.frameId.equal(uuid)) {}
+        ItemFrameProtector.ifDatabase.delete(uuid)
     }
 
     private fun isProtectedBlock(location: Location): Boolean {
